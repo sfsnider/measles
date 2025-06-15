@@ -3,6 +3,7 @@ import pandas as pd
 from prophet import Prophet
 import plotly.graph_objects as go
 
+# Streamlit app to forecast measles cases for 2025
 st.set_page_config(page_title="📈 Measles Forecast 2025", layout="wide")
 st.title("🦠 Measles Weekly Forecast for 2025")
 
