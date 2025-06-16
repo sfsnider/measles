@@ -2,12 +2,14 @@ import streamlit as st
 import pandas as pd
 from prophet import Prophet
 import plotly.graph_objects as go
+from pathlib import Path
 
 # Streamlit app to forecast measles cases for 2025
 st.set_page_config(page_title="📈 Measles Forecast 2025", layout="wide")
 st.title("🦠 Measles Weekly Forecast for 2025")
 
-uploaded_file = st.file_uploader("📂 Upload latest 'Measles 2025.csv'", type="csv")
+DATA_FILENAME = Path(__file__).parent/'data/Measles 2025.csv'
+uploaded_file = st.file_uploader(DATA_FILENAME, type="csv")  #"📂 Upload latest 'Measles 2025.csv'", type="csv")
 
 # Session state to hold the edited data across reruns
 if "data" not in st.session_state:
