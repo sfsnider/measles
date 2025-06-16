@@ -30,26 +30,33 @@ if not required_cols.issubset(data.columns):
 data = data.dropna(subset=['week_start', 'cases'])
 data['week_start'] = pd.to_datetime(data['week_start'])
 
-# Allow editing
-st.subheader("✏️ Edit Weekly Case Data")
-editable_data = data.copy()
-edited_data = st.data_editor(
-    editable_data,
-    num_rows="dynamic",
-    use_container_width=True,
-    key="editable_table"
-)
+# Layout: Side-by-side columns
+left_col, right_col = st.columns([1.1, 1.9])
 
-# Save edits and update state
-if st.button("💾 Save & Update Forecast"):
-    try:
-        edited_data.to_csv(DATA_FILENAME, index=False)
-        st.session_state.data = edited_data
-        st.success("✅ Data saved and forecast updated.")
-        st.rerun()
-    except Exception as e:
-        st.error(f"❌ Failed to save: {e}")
-        st.stop()
+with left_col:
+    st.subheader("✏️ Review Weekly Case Data")
+
+    # Sort so newest is at the bottom
+    editable_data = data.copy().sort_values(by="week_start").reset_index(drop=True)
+
+    # Scroll-height adjusted table
+    edited_data = st.data_editor(
+        editable_data,
+        num_rows="dynamic",
+        use_container_width=True,
+        height=450,
+        key="editable_table"
+    )
+
+    if st.button("💾 Save & Update Forecast"):
+        try:
+            edited_data.to_csv(DATA_FILENAME, index=False)
+            st.session_state.data = edited_data
+            st.success("✅ Data saved and forecast updated.")
+            st.rerun()
+        except Exception as e:
+            st.error(f"❌ Failed to save: {e}")
+            st.stop()
 
 # Use saved edited data if available, else fallback to original
 working_data = st.session_state.data if st.session_state.data is not None else data
@@ -84,49 +91,51 @@ combined['cumulative_yhat'] = combined.loc[combined['ds'] >= start_date, 'yhat']
 combined['cumulative_yhat'].fillna(0, inplace=True)
 
 # === Plotting ===
-fig = go.Figure()
+with right_col:
+    fig = go.Figure()
 
-fig.add_trace(go.Scatter(
-    x=historical['ds'], y=historical['yhat'],
-    mode='markers', name='Actual Weekly Cases',
-    marker=dict(color='blue')
-))
-fig.add_trace(go.Scatter(
-    x=forecast['ds'], y=forecast['yhat'],
-    mode='lines', name='Forecasted Weekly Cases',
-    line=dict(color='orange')
-))
-fig.add_trace(go.Scatter(
-    x=combined['ds'], y=combined['cumulative_yhat'],
-    mode='lines', name='Cumulative Cases from Jan 1, 2025',
-    line=dict(color='green', dash='dot')
-))
-fig.add_trace(go.Scatter(
-    x=forecast['ds'], y=forecast['yhat_upper'],
-    mode='lines', line=dict(color='orange', dash='dot'),
-    showlegend=False
-))
-fig.add_trace(go.Scatter(
-    x=forecast['ds'], y=forecast['yhat_lower'],
-    mode='lines', line=dict(color='orange', dash='dot'),
-    fill='tonexty', showlegend=False
-))
-fig.add_shape(
-    type="line", x0=future_start, x1=future_start, y0=0, y1=1,
-    xref="x", yref="paper", line=dict(color="red", dash="dash")
-)
-fig.add_annotation(
-    x=future_start, y=1, xref="x", yref="paper",
-    text="Forecast Start", showarrow=False, font=dict(color="red")
-)
+    fig.add_trace(go.Scatter(
+        x=historical['ds'], y=historical['yhat'],
+        mode='markers', name='Actual Weekly Cases',
+        marker=dict(color='blue')
+    ))
+    fig.add_trace(go.Scatter(
+        x=forecast['ds'], y=forecast['yhat'],
+        mode='lines', name='Forecasted Weekly Cases',
+        line=dict(color='orange')
+    ))
+    fig.add_trace(go.Scatter(
+        x=combined['ds'], y=combined['cumulative_yhat'],
+        mode='lines', name='Cumulative Cases from Jan 1, 2025',
+        line=dict(color='green', dash='dot')
+    ))
+    fig.add_trace(go.Scatter(
+        x=forecast['ds'], y=forecast['yhat_upper'],
+        mode='lines', line=dict(color='orange', dash='dot'),
+        showlegend=False
+    ))
+    fig.add_trace(go.Scatter(
+        x=forecast['ds'], y=forecast['yhat_lower'],
+        mode='lines', line=dict(color='orange', dash='dot'),
+        fill='tonexty', showlegend=False
+    ))
+    fig.add_shape(
+        type="line", x0=future_start, x1=future_start, y0=0, y1=1,
+        xref="x", yref="paper", line=dict(color="red", dash="dash")
+    )
+    fig.add_annotation(
+        x=future_start, y=1, xref="x", yref="paper",
+        text="Forecast Start", showarrow=False, font=dict(color="red")
+    )
 
-fig.update_layout(
-    title="📊 Weekly Measles Forecast with Cumulative Totals (2025)",
-    xaxis_title="Date - Week Start", yaxis_title="Cases",
-    template="plotly_white", width=1000, height=600
-)
+    fig.update_layout(
+        title="📊 Weekly Measles Forecast with Cumulative Totals (2025)",
+        xaxis_title="Date - Week Start", yaxis_title="Cases",
+        template="plotly_white", height=600
+    )
 
-st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True)
 
+# Final stat
 final_total = combined[combined['ds'] <= future_end]['cumulative_yhat'].iloc[-1]
 st.success(f"📌 Total actual + forecasted cases through 2025-12-31: {final_total:,.0f}")
