@@ -30,27 +30,33 @@ if not required_cols.issubset(data.columns):
 data = data.dropna(subset=['week_start', 'cases'])
 data['week_start'] = pd.to_datetime(data['week_start'])
 
-# Allow editing
-st.subheader("✏️ Edit Weekly Case Data")
-editable_data = data.copy()
-edited_data = st.data_editor(
-    editable_data,
+# Show and edit last 10 rows only
+st.subheader("✏️ Edit Most Recent Weekly Case Data")
+data_sorted = data.sort_values(by="week_start")
+editable_tail = data_sorted.tail(10).reset_index(drop=True)
+
+edited_tail = st.data_editor(
+    editable_tail,
     num_rows="dynamic",
     use_container_width=True,
     key="editable_table"
 )
 
-# Save edits and update state
+# Save edits and update full dataset
 if st.button("💾 Save & Update Forecast"):
     try:
-        edited_data.to_csv(DATA_FILENAME, index=False)
-        st.session_state.data = edited_data
-        st.success("✅ Data saved and forecast updated.")
+        # Replace last 10 rows in original dataset with edited versions
+        full_data = data_sorted.copy().reset_index(drop=True)
+        full_data.iloc[-10:] = edited_tail
+
+        full_data.to_csv(DATA_FILENAME, index=False)
+        st.session_state.data = full_data
+        st.success("✅ Edits saved to last 10 rows. Forecast will update.")
         st.rerun()
     except Exception as e:
         st.error(f"❌ Failed to save: {e}")
         st.stop()
-
+        
 # Use saved edited data if available, else fallback to original
 working_data = st.session_state.data if st.session_state.data is not None else data
 
