@@ -47,16 +47,20 @@ if st.button("💾 Save & Update Forecast"):
     try:
         # Replace last 10 rows in original dataset with edited versions
         full_data = data_sorted.copy().reset_index(drop=True)
-        full_data.iloc[-5:] = edited_tail
+        full_data.iloc[-10:] = edited_tail
 
+        # Save to CSV
         full_data.to_csv(DATA_FILENAME, index=False)
+
+        # Clear cache and update session state
+        st.cache_data.clear()
         st.session_state.data = full_data
-        st.success("✅ Edits saved to last 10 rows. Forecast will update.")
+
+        st.success("✅ Edits saved. Forecast will now update.")
         st.rerun()
     except Exception as e:
         st.error(f"❌ Failed to save: {e}")
         st.stop()
-
 # Use saved edited data if available, else fallback to original
 working_data = st.session_state.data if st.session_state.data is not None else data
 
