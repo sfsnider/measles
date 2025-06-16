@@ -91,7 +91,7 @@ historical['type'] = 'Actual'
 combined = pd.concat([historical, forecast], ignore_index=True)
 combined.sort_values(by='ds', inplace=True)
 combined['cumulative_yhat'] = combined.loc[combined['ds'] >= start_date, 'yhat'].cumsum()
-combined['cumulative_yhat'].fillna(0, inplace=True)
+combined['cumulative_yhat'] = combined['cumulative_yhat'].fillna(0)
 
 # === Plotting ===
 fig = go.Figure()
