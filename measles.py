@@ -4,7 +4,7 @@ from prophet import Prophet
 import plotly.graph_objects as go
 
 # CDC stable public dataset URL
-CSV_URL = "https://data.cdc.gov/api/views/kpbd-vsd5/rows.csv?accessType=DOWNLOAD"
+CSV_URL = "blob:https://www.cdc.gov/082c4a7b-7cfb-4ae1-9b64-6ed38a43c0b2"
 
 # Set up Streamlit page
 st.set_page_config(page_title="📈 Measles Forecast 2025", layout="wide")
