@@ -30,10 +30,10 @@ if not required_cols.issubset(data.columns):
 data = data.dropna(subset=['week_start', 'cases'])
 data['week_start'] = pd.to_datetime(data['week_start'])
 
-# Show and edit last 10 rows only
+# Show and edit last 5 rows only
 st.subheader("✏️ Edit Most Recent Weekly Case Data")
 data_sorted = data.sort_values(by="week_start")
-editable_tail = data_sorted.tail(10).reset_index(drop=True)
+editable_tail = data_sorted.tail(5).reset_index(drop=True)
 
 edited_tail = st.data_editor(
     editable_tail,
@@ -56,7 +56,7 @@ if st.button("💾 Save & Update Forecast"):
     except Exception as e:
         st.error(f"❌ Failed to save: {e}")
         st.stop()
-        
+
 # Use saved edited data if available, else fallback to original
 working_data = st.session_state.data if st.session_state.data is not None else data
 
