@@ -9,7 +9,7 @@ DATA_FILENAME = Path(__file__).parent / "data" / "Measles 2025.csv"
 
 # Streamlit app to forecast measles cases for 2025
 st.set_page_config(page_title="📈 Measles Forecast 2025", layout="wide")
-st.title("🦠 Measles Weekly Forecast for 2025")
+st.title("🦠 Measles - Weekly Forecast for 2025")
 
 # Read the CSV file
 @st.cache_data
