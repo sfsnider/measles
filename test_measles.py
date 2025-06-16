@@ -47,7 +47,7 @@ if st.button("💾 Save & Update Forecast"):
     try:
         # Replace last 10 rows in original dataset with edited versions
         full_data = data_sorted.copy().reset_index(drop=True)
-        full_data.iloc[-10:] = edited_tail
+        full_data.iloc[-5:] = edited_tail
 
         full_data.to_csv(DATA_FILENAME, index=False)
         st.session_state.data = full_data
